@@ -129,6 +129,8 @@ object ParticipantService {
 
     class DrainQueueTask(val connection: Connection) : Runnable {
         override fun run() {
+            if (!connection.compress) return
+
             val queue = connection.queue
             val toWrite = synchronized(queue) {
                 generateSequence { queue.poll() }.toList()
@@ -149,7 +151,7 @@ object ParticipantService {
         lateinit var other: Connection
 
         override fun send(text: String?) {
-            if (compress && target == ConnectionTarget.SWITCHER) {
+            if (target == ConnectionTarget.SWITCHER) {
                 synchronized(queue) {
                     queue.add(text)
                 }
@@ -172,10 +174,12 @@ object ParticipantService {
             setAttachment(target)
             log("Connected")
             if (target == ConnectionTarget.SWITCHER) {
-                mapOf(
+                val map = mapOf(
                     "participant-tunnel-id" to tunnelId,
                     "system-info" to SystemInfoSerializer.toMap(systemInfo)
-                ).let { sendAndLog(gson.toJson(it)) }
+                )
+                val message = gson.toJson(map)
+                sendOriginal(message)
                 compress = true
             }
         }
