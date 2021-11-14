@@ -42,6 +42,12 @@ class TextAreaOutput(private val textArea: JTextArea) {
         SwingUtilities.invokeLater {
             textArea.foreground = color
             textArea.append(text)
+            if (textArea.lineCount > 1000) {
+                textArea.replaceRange(null,
+                    textArea.getLineStartOffset(0),
+                    textArea.getLineStartOffset(1),
+                )
+            }
         }
     }
 }
