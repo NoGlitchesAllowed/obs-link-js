@@ -49,7 +49,12 @@ class Switcher(address: InetSocketAddress, val secret: String) : WebSocketServer
         conn.log("Disconnected code=$code reason=$reason remote=$remote")
         val state = conn.state
         if (state is ParticipantState) {
-            getObsWebsocketJsListeningTo(state.participantTunnelId).forEach { it.close(1000, "Linked connection has closed") }
+            getObsWebsocketJsListeningTo(state.participantTunnelId).forEach {
+                it.close(
+                    1000,
+                    "Linked connection has closed"
+                )
+            }
         }
     }
 

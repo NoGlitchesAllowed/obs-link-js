@@ -18,7 +18,6 @@
 
 package org.noglitchesallowed.obslink.system.info
 
-import io.kaitai.struct.ByteBufferKaitaiStream
 import oshi.SystemInfo
 import oshi.hardware.*
 import oshi.software.os.*
@@ -193,7 +192,6 @@ object SystemInfoSerializerReference {
     private fun HardwareAbstractionLayer.toMap(): Map<*, *> = mapOf(
         "computerSystem" to this.computerSystem?.toMap(),
         "diskStores" to this.diskStores?.map { it.toMap() },
-        "displays" to this.displays?.map { it.toMap() },
         "logicalVolumeGroups" to this.logicalVolumeGroups?.map { it.toMap() },
         "memory" to this.memory?.toMap(),
         "getNetworkIFs(true)" to this.getNetworkIFs(true)?.map { it.toMap() },
@@ -340,18 +338,6 @@ object SystemInfoSerializerReference {
         "name" to this.name,
         "physicalVolumes" to this.physicalVolumes
     )
-
-    private fun Edid.toMap() = mapOf(
-        "mfgStr" to this.mfgStr(),
-        "mfgWeek" to this.mfgWeek(),
-        "mfgYear" to this.mfgYear(),
-        "productCode" to this.productCode(),
-        "screenSizeH" to this.screenSizeH(),
-        "screenSizeV" to this.screenSizeV(),
-        "serial" to this.serial()
-    )
-
-    private fun Display.toMap() = ByteBufferKaitaiStream(this.edid).let { Edid(it) }.toMap()
 
     private fun HWDiskStore.toMap(): Map<*, *> = mapOf(
         "currentQueueLength" to this.currentQueueLength,

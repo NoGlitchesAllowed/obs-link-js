@@ -29,16 +29,16 @@ class ManagementReadyState(override val conn: WebSocket, val switcher: Switcher)
     override fun handle(rawMessage: String): ConnectionState {
         val json = JsonParser.parseString(rawMessage).asJsonObject
 
-        val request = json["request-type"]?.asString?.lowercase()?.replace("-","")
+        val request = json["request-type"]?.asString?.lowercase()?.replace("-", "")
         if (request == null) {
-            managementError(conn,"Expected request-type", json)
+            managementError(conn, "Expected request-type", json)
             return this
         }
 
         val response = JsonObject()
 
         json["message-id"]?.asString?.let { response.addProperty("message-id", it) }
-        when(request) {
+        when (request) {
             "listclients" -> {
                 val array = JsonArray()
                 switcher.getParticipants().forEach { array.add(it.participantTunnelId) }
