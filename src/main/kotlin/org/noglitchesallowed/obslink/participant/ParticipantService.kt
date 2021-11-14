@@ -23,16 +23,16 @@ import org.java_websocket.handshake.ServerHandshake
 import org.noglitchesallowed.obslink.gui.ConsoleGUI
 import org.noglitchesallowed.obslink.system.info.SystemInfoSerializer
 import org.noglitchesallowed.obslink.system.stats.StatsRequestInterceptor
-import org.noglitchesallowed.obslink.utils.WebSocketLogAttachment
-import org.noglitchesallowed.obslink.utils.gson
-import org.noglitchesallowed.obslink.utils.log
-import org.noglitchesallowed.obslink.utils.sendAndLog
+import org.noglitchesallowed.obslink.utils.*
 import oshi.SystemInfo
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.PrintWriter
 import java.net.ConnectException
 import java.net.URI
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -94,6 +94,7 @@ object ParticipantService {
 
         executor.submit(localObsConnection)
         executor.submit(switcherConnection)
+        executor.scheduleWithFixedDelay(DrainQueueTask(switcherConnection), 0L, 1L, TimeUnit.SECONDS)
     }
 
     private fun checkAlreadyRunning() {
@@ -131,8 +132,40 @@ object ParticipantService {
         exitProcess(-1)
     }
 
+    class DrainQueueTask(val connection: Connection) : Runnable {
+        override fun run() {
+            val queue = connection.queue
+            val toWrite = synchronized(queue) {
+                generateSequence { queue.poll() }.toList()
+            }
+            if (toWrite.isEmpty()) return
+
+            val builder = StringBuilder()
+            toWrite.forEach { builder.appendLine(it) }
+            val message = GZip.zipString(builder.toString())
+            connection.sendOriginal(message)
+            connection.log("Sending compressed ${toWrite.size} messages: $message")
+        }
+    }
+
     class Connection(uri: String, private val target: ConnectionTarget) : WebSocketClient(URI(uri)) {
+        var compress = false
+        val queue = LinkedList<String?>()
         lateinit var other: Connection
+
+        override fun send(text: String?) {
+            if (compress && target == ConnectionTarget.SWITCHER) {
+                synchronized(queue) {
+                    queue.add(text)
+                }
+            } else {
+                super.send(text)
+            }
+        }
+
+        fun sendOriginal(text: String?) {
+            super.send(text)
+        }
 
         override fun run() {
             setAttachment(target)
@@ -148,6 +181,7 @@ object ParticipantService {
                     "participant-tunnel-id" to tunnelId,
                     "system-info" to SystemInfoSerializer.toMap(systemInfo)
                 ).let { sendAndLog(gson.toJson(it)) }
+                compress = true
             }
         }
 
@@ -168,6 +202,11 @@ object ParticipantService {
         }
 
         override fun onClose(code: Int, reason: String?, remote: Boolean) {
+            synchronized(queue) {
+                queue.clear()
+            }
+
+            compress = false
             if (reason != "Connection refused: connect")
                 log("Closed - attempting to reconnect. Code=$code, reason $reason, remote $remote")
             executor.schedule({ reconnect() }, 10L, TimeUnit.SECONDS)

@@ -22,6 +22,8 @@ import com.google.gson.JsonObject
 import org.java_websocket.WebSocket
 import org.noglitchesallowed.obslink.switcher.Switcher
 import org.noglitchesallowed.obslink.system.stats.StatsRequestInterceptor
+import org.noglitchesallowed.obslink.utils.GZip
+import org.noglitchesallowed.obslink.utils.log
 import org.noglitchesallowed.obslink.utils.sendAndLog
 
 class ParticipantState(
@@ -29,6 +31,15 @@ class ParticipantState(
     val systemInfo: JsonObject, val switcher: Switcher
 ) : ConnectionState {
     override fun handle(rawMessage: String): ConnectionState {
+        GZip.unzipString(rawMessage).lines().dropLast(1).forEach {
+            conn.log("Received compressed: $it")
+            handle0(it)
+        }
+
+        return this
+    }
+
+    private fun handle0(rawMessage: String): ConnectionState {
         val message = StatsRequestInterceptor.interceptSwitcher(rawMessage)
         switcher.getObsWebsocketJsListeningTo(participantTunnelId).forEach { it.sendAndLog(message) }
         return this
