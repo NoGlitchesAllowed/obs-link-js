@@ -22,24 +22,15 @@ import com.googlecode.jinahya.io.BitInput
 import com.googlecode.jinahya.io.BitOutput
 
 data class MemoryStats(
-    val available: Long,
-    val pageSize: Long,
-    val total: Long,
-    val virtualMemory: VirtualMemoryStats
+    val available: Long
 ) {
     fun write(bitOutput: BitOutput) {
         bitOutput.writeLong(64, available)
-        bitOutput.writeLong(64, pageSize)
-        bitOutput.writeLong(64, total)
-        virtualMemory.write(bitOutput)
     }
 
     companion object {
         fun read(bitInput: BitInput) = MemoryStats(
-            bitInput.readLong(64),
-            bitInput.readLong(64),
-            bitInput.readLong(64),
-            VirtualMemoryStats.read(bitInput)
+            bitInput.readLong(64)
         )
     }
 }

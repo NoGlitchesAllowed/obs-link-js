@@ -24,26 +24,20 @@ import org.noglitchesallowed.obslink.system.stats.readList
 import org.noglitchesallowed.obslink.system.stats.writeList
 
 data class ProcessorStats(
-    val contextSwitches: Long,
     val currentFreq: List<Long>,
-    val interrupts: Long,
     val processorCpuLoadTicks: List<List<Long>>,
     val systemCpuLoadTicks: List<Long>
 ) {
     companion object {
         fun read(bitInput: BitInput) = ProcessorStats(
-            bitInput.readLong(64),
             bitInput.readList { it.readLong(64) },
-            bitInput.readLong(64),
             bitInput.readList { it.readList { it.readLong(64) } },
             bitInput.readList { it.readLong(64) }
         )
     }
 
     fun write(bitOutput: BitOutput) {
-        bitOutput.writeLong(64, contextSwitches)
         bitOutput.writeList(currentFreq) { it, value -> it.writeLong(64, value) }
-        bitOutput.writeLong(64, interrupts)
         bitOutput.writeList(processorCpuLoadTicks) { it, value ->
             it.writeList(value) { it2, value2 ->
                 it2.writeLong(

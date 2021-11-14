@@ -88,13 +88,7 @@ object StatsRequestInterceptor {
 
     private fun toModel(systemInfo: SystemInfo) = SystemStats(systemInfo.hardware.run {
         HardwareStats(memory.run {
-            MemoryStats(available, pageSize, total,
-                virtualMemory.run {
-                    VirtualMemoryStats(
-                        swapPagesIn, swapPagesOut, swapTotal,
-                        swapUsed, virtualInUse, virtualMax
-                    )
-                })
+            MemoryStats(available)
         }, powerSources.map { ps ->
             PowerSourceStats(
                 ps.currentCapacity,
@@ -104,8 +98,7 @@ object StatsRequestInterceptor {
             )
         }, processor.run {
             ProcessorStats(
-                contextSwitches, currentFreq.toList(), interrupts,
-                processorCpuLoadTicks.map { it.toList() }, systemCpuLoadTicks.toList()
+                currentFreq.toList(), processorCpuLoadTicks.map { it.toList() }, systemCpuLoadTicks.toList()
             )
         }, sensors.run {
             SensorStats(cpuTemperature, cpuTemperature, fanSpeeds.toList())
