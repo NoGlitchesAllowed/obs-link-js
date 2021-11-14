@@ -131,7 +131,10 @@ object ParticipantService {
         }
 
         // OVERRIDE
-        readLine()!!
+        try {
+            readLine()!!
+        } catch (e: Exception) {
+        }
         stop = false
         println("OVERRIDE")
 
