@@ -21,6 +21,7 @@ package org.noglitchesallowed.obslink.system.stats
 import com.googlecode.jinahya.io.BitInput
 import com.googlecode.jinahya.io.BitOutput
 import org.noglitchesallowed.obslink.system.stats.model.*
+import org.noglitchesallowed.obslink.utils.GZip
 import org.noglitchesallowed.obslink.utils.gson
 import oshi.SystemInfo
 import java.io.ByteArrayInputStream
@@ -36,25 +37,11 @@ object StatsRequestInterceptor {
 
         // Encode: System Stats -> Bitstream -> ByteArray -> Compress -> Base64
         val model = toModel(systemInfo)
-        //println("DEBUG: Encoding $model")
-        var baos = ByteArrayOutputStream()
+        val baos = ByteArrayOutputStream()
         val bo = BitOutput(BitOutput.StreamOutput(baos))
         model.write(bo)
         val rawBytes = baos.toByteArray()
-        //println("DEBUG: rawBytes ${rawBytes.joinToString(" ")}")
-
-        baos = ByteArrayOutputStream()
-        val gzip = GZIPOutputStream(baos)
-        gzip.write(rawBytes)
-        gzip.flush()
-        gzip.close()
-        val compressedBytes = baos.toByteArray()
-        //println("DEBUG: compressedBytes ${compressedBytes.joinToString(" ")}")
-
-        val base64 = compressedBytes.let { Base64.getEncoder().encodeToString(it) }
-        //println("DEBUG: base64 $base64")
-
-        statsMap["system"] = base64
+        statsMap["system"] = GZip.zip(rawBytes)
         jsonMap["stats"] = statsMap
         return gson.toJson(jsonMap)
     }
@@ -67,13 +54,8 @@ object StatsRequestInterceptor {
 
         try {
             stats["system"] = stats["system"]
-                //.also { println("DEBUG: base64 $it") }
-                .let { Base64.getDecoder().decode(it.toString()) }
-                //.also { println("DEBUG: compressedBytes ${it.joinToString(" ")}") }
-                .let { ByteArrayInputStream(it) }
-                .let { GZIPInputStream(it) }
-                .readAllBytes()
-                //.also { println("DEBUG: rawBytes ${it.joinToString(" ")}") }
+                .let { it as String }
+                .let { GZip.unzip(it) }
                 .let { ByteArrayInputStream(it) }
                 .let { BitInput(BitInput.StreamInput(it)) }
                 .let { SystemStats.read(it) }
