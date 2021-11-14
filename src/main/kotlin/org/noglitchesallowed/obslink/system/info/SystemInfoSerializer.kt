@@ -38,78 +38,41 @@ object SystemInfoSerializer {
 
     private fun OperatingSystem.OSVersionInfo.toMap(): Map<*, *> = mapOf(
         "buildNumber" to this.buildNumber,
-        "codeName" to this.codeName,
-        "version" to this.version
     )
 
     private fun HardwareAbstractionLayer.toMap(): Map<*, *> = mapOf(
-        "computerSystem" to this.computerSystem?.toMap(),
+        "graphicsCards" to this.graphicsCards?.map { it.toMap() },
         "memory" to this.memory?.toMap(),
-        "powerSources" to this.powerSources?.map { it.toMap() },
         "processor" to this.processor?.toMap(),
         "sensors" to this.sensors?.toMap(),
-        "soundCards" to this.soundCards?.map { it.toMap() },
+        "soundCards" to this.soundCards?.map { it.toMap() }
+    )
+
+    private fun GraphicsCard.toMap(): Map<*, *> = mapOf(
+        "name" to this.name,
+        "vendor" to this.vendor,
+        "vRam" to this.vRam
     )
 
     private fun SoundCard.toMap(): Map<*, *> = mapOf(
-        "codec" to this.codec,
-        "driverVersion" to this.driverVersion,
         "name" to this.name
     )
 
     private fun Sensors.toMap(): Map<*, *> = mapOf(
         "cpuTemperature" to this.cpuTemperature,
-        "cpuVoltage" to this.cpuVoltage,
-        "fanSpeeds" to this.fanSpeeds.toList()
     )
 
     private fun CentralProcessor.toMap(): Map<*, *> = mapOf(
-        "logicalProcessorCount" to this.logicalProcessorCount,
-        "maxFreq" to this.maxFreq,
-        "physicalPackageCount" to this.physicalPackageCount,
-        "physicalProcessorCount" to this.physicalProcessorCount,
         "processorIdentifier" to this.processorIdentifier?.toMap(),
     )
 
     private fun CentralProcessor.ProcessorIdentifier.toMap(): Map<*, *> = mapOf(
-        "family" to this.family,
-        "identifier" to this.identifier,
-        "isCpu64bit" to this.isCpu64bit,
-        "microarchitecture" to this.microarchitecture,
-        "model" to this.model,
         "name" to this.name,
-        "stepping" to this.stepping,
-        "vendor" to this.vendor
-    )
-
-    private fun PowerSource.toMap(): Map<*, *> = mapOf(
-        "amperage" to this.amperage,
-        "capacityUnits" to this.capacityUnits,
-        "chemistry" to this.chemistry,
-        "cycleCount" to this.cycleCount,
-        "designCapacity" to this.designCapacity,
-        "deviceName" to this.deviceName,
-        "manufactureDate" to this.manufactureDate?.toString(),
-        "manufacturer" to this.manufacturer,
-        "maxCapacity" to this.maxCapacity,
-        "name" to this.name
     )
 
     private fun GlobalMemory.toMap(): Map<*, *> = mapOf(
-        "available" to this.available,
-        "pageSize" to this.pageSize,
         "total" to this.total,
         "physicalMemory" to this.physicalMemory?.map { it.toMap() },
-        "virtualMemory" to this.virtualMemory?.toMap()
-    )
-
-    private fun VirtualMemory.toMap(): Map<*, *> = mapOf(
-        "swapPagesIn" to this.swapPagesIn,
-        "swapPagesOut" to this.swapPagesOut,
-        "swapTotal" to this.swapTotal,
-        "swapUsed" to this.swapUsed,
-        "virtualInUse" to this.virtualInUse,
-        "virtualMax" to this.virtualMax
     )
 
     private fun PhysicalMemory.toMap() = mapOf(
@@ -120,24 +83,5 @@ object SystemInfoSerializer {
         "memoryType" to this.memoryType
     )
 
-    private fun ComputerSystem.toMap(): Map<*, *> = mapOf(
-        "baseboard" to this.baseboard?.toMap(),
-        "firmware" to this.firmware?.toMap(),
-        "manufacturer" to this.manufacturer,
-        "model" to this.model,
-    )
-
-    private fun Firmware.toMap(): Map<*, *> = mapOf(
-        "description" to this.description,
-        "manufacturer" to this.manufacturer,
-        "name" to this.name,
-        "releaseDate" to this.releaseDate,
-        "version" to this.version
-    )
-
-    private fun Baseboard.toMap(): Map<*, *> = mapOf(
-        "manufacturer" to this.manufacturer,
-        "model" to this.model,
-        "version" to this.version
-    )
 }
+
