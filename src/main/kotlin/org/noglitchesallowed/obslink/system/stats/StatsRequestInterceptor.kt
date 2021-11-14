@@ -18,53 +18,44 @@
 
 package org.noglitchesallowed.obslink.system.stats
 
-import com.googlecode.jinahya.io.BitInput
-import com.googlecode.jinahya.io.BitOutput
 import org.noglitchesallowed.obslink.system.stats.model.*
-import org.noglitchesallowed.obslink.utils.GZip
 import org.noglitchesallowed.obslink.utils.gson
 import oshi.SystemInfo
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.util.*
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 
 object StatsRequestInterceptor {
+    private const val SYSTEM_STATS_KEY = "systemStats"
+
     fun interceptLocal(message: String, systemInfo: SystemInfo): String {
-        val jsonMap = gson.fromJson(message, Map::class.java).toMutableMap()
-        val statsMap = (jsonMap["stats"] as? Map<*, *>)?.toMutableMap() ?: return message
+        fun processInserts(map: MutableMap<Any?, Any?>) {
+            val stats = (map["stats"] as? Map<*, *>)?.toMutableMap()
+            if (stats != null) {
+                stats[SYSTEM_STATS_KEY] = toModel(systemInfo)
+            }
 
-        // Encode: System Stats -> Bitstream -> ByteArray -> Compress -> Base64
-        val model = toModel(systemInfo)
-        val baos = ByteArrayOutputStream()
-        val bo = BitOutput(BitOutput.StreamOutput(baos))
-        model.write(bo)
-        val rawBytes = baos.toByteArray()
-        statsMap["system"] = GZip.zip(rawBytes)
-        jsonMap["stats"] = statsMap
-        return gson.toJson(jsonMap)
-    }
+            if (map["update-type"] == "StreamStatus") {
+                map[SYSTEM_STATS_KEY] = toModel(systemInfo)
+            }
 
-    fun interceptSwitcher(message: String): String {
-        val json = gson.fromJson(message, MutableMap::class.java).toMutableMap()
-        val stats = (json["stats"] as? Map<*, *>)?.toMutableMap() ?: return message
+            for ((key, value) in map.entries) {
+                if (value is Iterable<*>) {
+                    map[key] = value.map {
+                        if (it !is Map<*, *>) return@map it
+                        val copy = it.toMutableMap()
+                        processInserts(copy)
+                        copy
+                    }
+                }
 
-        // Decode: Base64 -> Decompress -> ByteArray -> Bitstream -> System Stats
-
-        try {
-            stats["system"] = stats["system"]
-                .let { it as String }
-                .let { GZip.unzip(it) }
-                .let { ByteArrayInputStream(it) }
-                .let { BitInput(BitInput.StreamInput(it)) }
-                .let { SystemStats.read(it) }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            stats.remove("system")
+                if (value is Map<*, *>) {
+                    val copy = value.toMutableMap()
+                    processInserts(copy)
+                    map[key] = copy
+                }
+            }
         }
 
-        json["stats"] = stats
+        val json = gson.fromJson(message, Map::class.java).toMutableMap()
+        processInserts(json)
         return gson.toJson(json)
     }
 

@@ -40,8 +40,7 @@ class ParticipantState(
     }
 
     private fun handle0(rawMessage: String): ConnectionState {
-        val message = StatsRequestInterceptor.interceptSwitcher(rawMessage)
-        switcher.getObsWebsocketJsListeningTo(participantTunnelId).forEach { it.sendAndLog(message) }
+        switcher.getObsWebsocketJsListeningTo(participantTunnelId).forEach { it.sendAndLog(rawMessage) }
         return this
     }
 
