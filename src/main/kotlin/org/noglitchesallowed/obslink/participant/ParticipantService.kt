@@ -124,21 +124,11 @@ object ParticipantService {
         println("and terminate all 'javaw' processes.")
         println("If this persists, contact fgeorjje@noglitchesallowed.org")
 
-        var stop = true
-        thread {
-            Thread.sleep(20000)
-            if (stop) exitProcess(-1)
-        }
-
-        // OVERRIDE
         try {
-            readLine()!!
-        } catch (e: Exception) {
+            Thread.sleep(20000)
+        } catch (e: InterruptedException) {
         }
-        stop = false
-        println("OVERRIDE")
-
-        return
+        exitProcess(-1)
     }
 
     class Connection(uri: String, private val target: ConnectionTarget) : WebSocketClient(URI(uri)) {
