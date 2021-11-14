@@ -20,7 +20,6 @@ package org.noglitchesallowed.obslink.participant
 
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
-import org.noglitchesallowed.obslink.gui.ConsoleGUI
 import org.noglitchesallowed.obslink.system.info.SystemInfoSerializer
 import org.noglitchesallowed.obslink.system.stats.StatsRequestInterceptor
 import org.noglitchesallowed.obslink.utils.*
@@ -45,10 +44,6 @@ object ParticipantService {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        if (!ConsoleGUI.create()) {
-            throw AssertionError("Cannot run local service in headless mode")
-        }
-
         checkAlreadyRunning()
 
         val file = File("tunnel-id")

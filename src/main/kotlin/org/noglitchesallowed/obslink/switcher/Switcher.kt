@@ -21,7 +21,6 @@ package org.noglitchesallowed.obslink.switcher
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
-import org.noglitchesallowed.obslink.gui.ConsoleGUI
 import org.noglitchesallowed.obslink.switcher.states.*
 import org.noglitchesallowed.obslink.utils.log
 import java.net.InetSocketAddress
@@ -30,8 +29,6 @@ class Switcher(address: InetSocketAddress, val secret: String) : WebSocketServer
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            ConsoleGUI.create()
-
             val hostname = args[0]
             val port = args[1].toInt()
             val secret = args[2]
