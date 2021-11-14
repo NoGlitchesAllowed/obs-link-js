@@ -32,7 +32,7 @@ class ManagementInitState(
             ?: return ErrorState("Expected auth", this)
 
         val expected = OBSAuth.hash(switcher.secret, challenge, salt)
-        if (response != expected) {
+        if (!OBSAuth.matches(response, expected)) {
             return ErrorState("Invalid auth", this)
         }
 

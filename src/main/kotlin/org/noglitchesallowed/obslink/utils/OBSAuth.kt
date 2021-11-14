@@ -40,6 +40,8 @@ object OBSAuth {
         return auth_response
     }
 
+    fun matches(a: String, b: String) = MessageDigest.isEqual(a.toByteArray(), b.toByteArray())
+
     @JvmStatic
     fun main(args: Array<String>) {
         fun read(s: String) = println(s).let { readLine()!! }

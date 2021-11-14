@@ -41,7 +41,10 @@ class ObsWebSocketInitState(
 
         val tunnelId = switcher.getParticipants()
             .map { it.participantTunnelId }
-            .find { OBSAuth.hash("${switcher.secret}:$it", challenge, salt) == auth }
+            .find {
+                val expected = OBSAuth.hash("${switcher.secret}:$it", challenge, salt)
+                OBSAuth.matches(auth, expected)
+            }
             ?: return ErrorState("Invalid Auth", this)
 
         val msg = JsonObject()
