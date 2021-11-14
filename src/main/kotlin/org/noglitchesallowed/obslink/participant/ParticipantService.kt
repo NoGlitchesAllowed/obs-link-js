@@ -31,9 +31,12 @@ import oshi.SystemInfo
 import java.io.File
 import java.net.ConnectException
 import java.net.URI
+import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
+import kotlin.system.exitProcess
 
 object ParticipantService {
     private val executor = Executors.newScheduledThreadPool(4)
@@ -45,6 +48,8 @@ object ParticipantService {
         if (!ConsoleGUI.create()) {
             throw AssertionError("Cannot run local service in headless mode")
         }
+
+        checkAlreadyRunning()
 
         val file = File("tunnel-id")
         if (!file.exists() || !file.isFile) {
@@ -89,6 +94,48 @@ object ParticipantService {
 
         executor.submit(localObsConnection)
         executor.submit(switcherConnection)
+    }
+
+    private fun checkAlreadyRunning() {
+        val currentCommand = ProcessHandle.current().info().command().orElse(null)
+        if (currentCommand == null) {
+            println("Could not determine current command and perform an already running check")
+            return
+        }
+
+        val runningCount = ProcessHandle.allProcesses()
+            .filter { it.info().command().orElse(null) == currentCommand }
+            .count()
+
+        if (runningCount == 1L) {
+            return
+        }
+
+        val runningPath = Paths.get("").toAbsolutePath().toString()
+        if (!currentCommand.startsWith(runningPath)) {
+            // Running from IDE/test mode
+            println("Detected multiple instances of command but paths not matching.")
+            println("Assuming test/dev mode")
+            return
+        }
+
+        println("DETECTED MULTIPLE INSTANCES RUNNING!")
+        println("If this is an error, open task manager")
+        println("and terminate all 'javaw' processes.")
+        println("If this persists, contact fgeorjje@noglitchesallowed.org")
+
+        var stop = true
+        thread {
+            Thread.sleep(20000)
+            if (stop) exitProcess(-1)
+        }
+
+        // OVERRIDE
+        readLine()!!
+        stop = false
+        println("OVERRIDE")
+
+        return
     }
 
     class Connection(uri: String, private val target: ConnectionTarget) : WebSocketClient(URI(uri)) {
