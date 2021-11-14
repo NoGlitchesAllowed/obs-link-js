@@ -44,8 +44,17 @@ object SystemInfoSerializer {
         "graphicsCards" to this.graphicsCards?.map { it.toMap() },
         "memory" to this.memory?.toMap(),
         "processor" to this.processor?.toMap(),
+        "powerSources" to this.powerSources.map { it.toMap() },
         "sensors" to this.sensors?.toMap(),
         "soundCards" to this.soundCards?.map { it.toMap() }
+    )
+
+    private fun PowerSource.toMap(): Map<*, *> = mapOf(
+        "capacityUnits" to this.capacityUnits,
+        "chemistry" to this.chemistry,
+        "cycleCount" to this.cycleCount,
+        "designCapacity" to this.designCapacity,
+        "maxCapacity" to this.maxCapacity
     )
 
     private fun GraphicsCard.toMap(): Map<*, *> = mapOf(
