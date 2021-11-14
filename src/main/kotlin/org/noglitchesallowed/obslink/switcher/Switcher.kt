@@ -74,7 +74,10 @@ class Switcher(address: InetSocketAddress, val secret: String) : WebSocketServer
         }
     }
 
-    override fun onError(conn: WebSocket, ex: Exception) = conn.log(ex.stackTraceToString())
+    override fun onError(conn: WebSocket?, ex: Exception) {
+        conn?.log(ex.stackTraceToString()) ?: ex.printStackTrace()
+    }
+
     override fun onStart() = println("Server started")
 
     fun getParticipants(): List<ParticipantState> = connections.mapNotNull { it.state as? ParticipantState }
