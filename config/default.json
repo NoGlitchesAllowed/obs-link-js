@@ -1,0 +1,12 @@
+{
+    "port": 3000,
+    "defaultTarget": "ws://localhost:4455",
+    "logLevel": {
+        "console": "info"
+    },
+    "secrets": {
+        "client": "flan",
+        "controller": "flan",
+        "manager": "flan"
+    }
+}

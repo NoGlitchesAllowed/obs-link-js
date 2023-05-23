@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Roboto:ital,wght@1,500&display=swap');
+
+body {
+  background-color: black;
+  font-family: 'Roboto Mono';
+  font-size: 30px;
+}
+
+span {
+  position: fixed;
+  top: 0px;
+  left: 10px;
+}
